@@ -6,27 +6,40 @@ export default function Signup() {
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("Form Data:", formData); // Debugging
+      console.log("Form Data:", formData);
 
       const res = await axiosInstance.post("/auth/signup", formData, {
         headers: { "Content-Type": "application/json" },
       });
 
-      console.log("Response:", res.data); // Debugging
+      console.log("Response:", res.data);
 
       if (res.status === 201) {
-        navigate("/"); // Redirect to login after successful signup
+        alert("Signup successful! Redirecting to login...");
+        navigate("/");
       }
     } catch (error) {
       console.error("Signup Error:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Signup failed");
+
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          alert(data.message || "Invalid input. Please check your details.");
+        } else if (status === 409) {
+          alert("Email already in use. Try a different email.");
+        } else if (status === 500) {
+          alert("Server error. Please try again later.");
+        } else {
+          alert("Signup failed. Please check your details.");
+        }
+      } else {
+        alert("Network error. Please check your internet connection.");
+      }
     }
   };
 

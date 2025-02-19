@@ -4,17 +4,33 @@ import axiosInstance from "../utils/axiosInstance";
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axiosInstance.post("/auth/login", formData);
       localStorage.setItem("accessToken", res.data.accessToken);
+      alert("Login successful! Redirecting to home...");
       navigate("/home"); // Navigate to home on successful login
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          alert(data.message || "Invalid email or password. Please try again.");
+        } else if (status === 401) {
+          alert("Unauthorized access. Please check your credentials.");
+        } else if (status === 403) {
+          alert("Access denied. Contact support.");
+        } else if (status === 500) {
+          alert("Server error. Please try again later.");
+        } else {
+          alert("Login failed. Please check your credentials.");
+        }
+      } else {
+        alert("Network error. Please check your internet connection.");
+      }
     }
   };
+  
   return (
     <div className="flex items-center justify-center h-screen">
     <form className="p-6 bg-white shadow-lg rounded-lg" onSubmit={handleSubmit}>
