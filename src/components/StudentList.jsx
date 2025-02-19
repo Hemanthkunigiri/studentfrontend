@@ -4,7 +4,8 @@ import { getStudents, deleteStudent } from "../utils/api";
 const StudentList = ({ onEdit }) => {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); // State for search term
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const studentsPerPage = 5;
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -34,6 +35,10 @@ const StudentList = ({ onEdit }) => {
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+// Pagination logic
+const indexOfLastStudent = currentPage * studentsPerPage;
+const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
 
   return (
     <div>
@@ -50,9 +55,10 @@ const StudentList = ({ onEdit }) => {
         />
       </div>
 
-      {filteredStudents.length === 0 ? (
+      {currentStudents.length === 0 ? (
         <p className="text-red-500">No students found.</p>
       ) : (
+        <>
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr className="border border-gray-300">
@@ -97,6 +103,25 @@ const StudentList = ({ onEdit }) => {
             ))}
           </tbody>
         </table>
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-4 space-x-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 border rounded ${currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white"}`}
+        >
+          &lt;
+        </button>
+        <span className="px-4 py-2">{currentPage}</span>
+        <button
+          onClick={() => setCurrentPage((prev) => (indexOfLastStudent < filteredStudents.length ? prev + 1 : prev))}
+          disabled={indexOfLastStudent >= filteredStudents.length}
+          className={`px-4 py-2 border rounded ${indexOfLastStudent >= filteredStudents.length ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white"}`}
+        >
+          &gt;
+        </button>
+      </div>
+      </>
       )}
     </div>
   );
