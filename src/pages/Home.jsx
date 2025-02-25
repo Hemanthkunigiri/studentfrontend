@@ -1,32 +1,46 @@
 import React, { useState, useEffect } from "react";
+import axiosInstance from "../utils/axiosInstance"; // Import axiosInstance
+
 import axios from "axios"; // Import axios for making HTTP requests
 import StudentList from "../components/StudentList";
 import StudentForm from "../components/StudentForm";
 import StudentEdit from "../components/StudentEdit";
 import Logout from "./Logout";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [view, setView] = useState("read");
   const [editingStudent, setEditingStudent] = useState(null);
-  const [reloadList, setReloadList] = useState(false);
   const [students, setStudents] = useState([]); // State for student list
-
-  const triggerReload = () => setReloadList((prev) => !prev);
+  const navigate = useNavigate();
 
   // Fetch all students
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`/students`);
+      const response = await axiosInstance.get(`/students`);
       setStudents(response.data.students); // Set the student list
     } catch (error) {
       console.error("Error fetching students:", error);
     }
   };
 
-  // Fetch students on reload or initial load
+  // Delete all students
+  const deleteAllStudents = async () => {
+    try {
+      await axiosInstance.delete("/students"); // Use axiosInstance for correct baseURL
+      setStudents([]); // Clear student list in UI
+      alert("All students deleted successfully!"); // Success message
+    } catch (error) {
+      console.error("Error deleting students:", error);
+      alert(`Failed to delete students. Error: ${error.response?.data?.message || error.message}`);
+    }
+  };
+  ;
+
+  // Fetch students on initial load
   useEffect(() => {
     fetchStudents();
-  }, [reloadList]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -50,6 +64,19 @@ const Home = () => {
         >
           Read Students
         </button>
+        
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => navigate("/upload")}
+        >
+          Upload File
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={deleteAllStudents}
+        >
+          Delete All Students
+        </button>
         <Logout />
       </div>
 
@@ -58,28 +85,27 @@ const Home = () => {
           <StudentForm
             onStudentAdded={() => {
               setView("read");
-              triggerReload();
+              fetchStudents();
             }}
           />
         )}
         {view === "edit" && editingStudent ? (
           <StudentEdit
             student={editingStudent}
-            onUpdate={(updatedStudent) => {
-              setEditingStudent(null); // Reset editing state
-              setView("read"); // Return to read mode
-              setReloadList((prev) => !prev); // Force list refresh
+            onUpdate={() => {
+              setEditingStudent(null);
+              setView("read");
+              fetchStudents();
             }}
           />
         ) : (
           view === "read" && (
             <StudentList
-              students={students} // Pass the students fetched from the backend
+              students={students}
               onEdit={(student) => {
                 setEditingStudent(student);
                 setView("edit");
               }}
-              reload={reloadList}
             />
           )
         )}

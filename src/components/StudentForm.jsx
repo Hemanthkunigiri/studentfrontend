@@ -5,24 +5,15 @@ const StudentForm = ({ onStudentAdded }) => {
   const [student, setStudent] = useState({
     name: "",
     studentId: "",
-    grade: "",
-    gpa: "",
-    attendance: { present: 0, absent: 0, late: 0 },
-    contactInformation: { phoneNo: "", email: "", address: "" },
+    email: "",
+    admissionNumber: "",
+    phoneNo: "",
+    address: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-      setStudent((prev) => ({
-        ...prev,
-        [parent]: { ...prev[parent], [child]: value },
-      }));
-    } else {
-      setStudent((prev) => ({ ...prev, [name]: value }));
-    }
+    setStudent((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -39,37 +30,13 @@ const StudentForm = ({ onStudentAdded }) => {
     <form onSubmit={handleSubmit} className="space-y-3 p-6 bg-white shadow-md rounded">
       <h2 className="text-xl font-bold">Add Student</h2>
 
-      {["name", "studentId", "grade", "gpa"].map((field) => (
+      {["name", "studentId", "email", "admissionNumber", "phoneNo", "address"].map((field) => (
         <input
           key={field}
           type="text"
           name={field}
           placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
           value={student[field] || ""}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-      ))}
-
-      {["present", "absent", "late"].map((field) => (
-        <input
-          key={field}
-          type="number"
-          name={`attendance.${field}`}
-          placeholder={`Attendance ${field}`}
-          value={student.attendance[field] || ""}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
-      ))}
-
-      {["phoneNo", "email", "address"].map((field) => (
-        <input
-          key={field}
-          type="text"
-          name={`contactInformation.${field}`}
-          placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-          value={student.contactInformation[field] || ""}
           onChange={handleChange}
           className="border p-2 w-full"
         />
